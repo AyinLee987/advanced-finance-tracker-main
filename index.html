@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Personal Finance Tracker</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="bg-gradient"></div>
+    <div class="skeleton" id="skeleton" aria-hidden="true">
+      <div class="skeleton__block"></div>
+      <div class="skeleton__block"></div>
+      <div class="skeleton__block"></div>
+    </div>
+
+    <div class="app">
+      <header class="app__header">
+        <div>
+          <p class="app__eyebrow" data-i18n="eyebrow">Personal Finance</p>
+          <h1 class="app__title" data-i18n="appTitle">Advanced Finance Tracker</h1>
+          <p class="app__subtitle" data-i18n="appSubtitle">
+            Track income, expenses, and your balance with clarity.
+          </p>
+        </div>
+        <div class="app__actions">
+          <button class="btn btn--ghost" id="langToggleBtn" type="button" aria-label="Switch language">
+            中文
+          </button>
+          <button class="btn btn--ghost" id="themeToggleBtn" type="button" data-i18n="lightMode">
+            Light Mode
+          </button>
+          <button class="btn btn--accent" id="exportCsvBtn" type="button" data-i18n="exportCsv">
+            Export CSV
+          </button>
+          <button class="btn btn--ghost" id="resetFiltersBtn" type="button" data-i18n="resetFilters">
+            Reset Filters
+          </button>
+        </div>
+      </header>
+
+      <section class="summary" aria-label="Financial summary">
+        <div class="card summary__card">
+          <p class="summary__label" data-i18n="totalBalance">Total Balance</p>
+          <h2 class="summary__value" id="totalBalance">$0.00</h2>
+        </div>
+        <div class="card summary__card">
+          <p class="summary__label" data-i18n="totalIncome">Total Income</p>
+          <h2 class="summary__value summary__value--income" id="totalIncome">$0.00</h2>
+        </div>
+        <div class="card summary__card">
+          <p class="summary__label" data-i18n="totalExpenses">Total Expenses</p>
+          <h2 class="summary__value summary__value--expense" id="totalExpenses">$0.00</h2>
+        </div>
+      </section>
+
+      <section class="card chart">
+        <div class="transactions__header">
+          <h3 class="section-title" data-i18n="cashFlowOverview">Cash Flow Overview</h3>
+          <p class="transactions__meta" data-i18n="incomeVsExpense">Income vs Expense</p>
+        </div>
+        <canvas
+          id="financeChart"
+          width="800"
+          height="260"
+          role="img"
+          aria-label="Bar chart showing total income versus total expenses"
+          data-i18n-aria="chartAriaLabel"
+        >
+          <p>Bar chart showing total income versus total expenses.</p>
+        </canvas>
+      </section>
+
+      <section class="grid">
+        <div class="card form">
+          <h3 class="section-title" data-i18n="addTransactionHeading">Add Transaction</h3>
+          <form id="transactionForm" class="form__grid" autocomplete="off">
+            <label class="form__field">
+              <span data-i18n="formTitle">Title</span>
+              <input
+                id="titleInput"
+                type="text"
+                placeholder="e.g., Freelance Payment"
+                aria-describedby="titleError"
+                required
+              />
+              <small class="error" id="titleError" aria-live="polite"></small>
+            </label>
+
+            <label class="form__field">
+              <span data-i18n="formAmount">Amount</span>
+              <input
+                id="amountInput"
+                type="number"
+                placeholder="e.g., 1200 or -45"
+                aria-describedby="amountError"
+                required
+              />
+              <small class="error" id="amountError" aria-live="polite"></small>
+            </label>
+
+            <label class="form__field">
+              <span data-i18n="formCategory">Category</span>
+              <select id="categoryInput" aria-describedby="categoryError" required>
+                <option value="" disabled selected data-i18n="selectCategory">Select category</option>
+                <option value="Salary" data-i18n="catSalary">Salary</option>
+                <option value="Business" data-i18n="catBusiness">Business</option>
+                <option value="Investments" data-i18n="catInvestments">Investments</option>
+                <option value="Housing" data-i18n="catHousing">Housing</option>
+                <option value="Food" data-i18n="catFood">Food</option>
+                <option value="Transport" data-i18n="catTransport">Transport</option>
+                <option value="Health" data-i18n="catHealth">Health</option>
+                <option value="Entertainment" data-i18n="catEntertainment">Entertainment</option>
+                <option value="Education" data-i18n="catEducation">Education</option>
+                <option value="Other" data-i18n="catOther">Other</option>
+              </select>
+              <small class="error" id="categoryError" aria-live="polite"></small>
+            </label>
+
+            <label class="form__field">
+              <span data-i18n="formDate">Date</span>
+              <input id="dateInput" type="date" aria-describedby="dateError" required />
+              <small class="error" id="dateError" aria-live="polite"></small>
+            </label>
+
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit" id="submitBtn" data-i18n="addTransactionBtn">
+                Add Transaction
+              </button>
+              <button class="btn btn--ghost" type="button" id="cancelEditBtn" data-i18n="cancelEdit" hidden>
+                Cancel Edit
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card filters">
+          <h3 class="section-title" data-i18n="filtersSearch">Filters &amp; Search</h3>
+          <div class="filters__grid">
+            <label class="form__field">
+              <span data-i18n="formCategory">Category</span>
+              <select id="filterCategory" aria-label="Filter by category">
+                <option value="all" data-i18n="allCategories">All categories</option>
+                <option value="Salary" data-i18n="catSalary">Salary</option>
+                <option value="Business" data-i18n="catBusiness">Business</option>
+                <option value="Investments" data-i18n="catInvestments">Investments</option>
+                <option value="Housing" data-i18n="catHousing">Housing</option>
+                <option value="Food" data-i18n="catFood">Food</option>
+                <option value="Transport" data-i18n="catTransport">Transport</option>
+                <option value="Health" data-i18n="catHealth">Health</option>
+                <option value="Entertainment" data-i18n="catEntertainment">Entertainment</option>
+                <option value="Education" data-i18n="catEducation">Education</option>
+                <option value="Other" data-i18n="catOther">Other</option>
+              </select>
+            </label>
+
+            <label class="form__field">
+              <span data-i18n="formTitle2">Type</span>
+              <select id="filterType" aria-label="Filter by type">
+                <option value="all" data-i18n="all">All</option>
+                <option value="income" data-i18n="income">Income</option>
+                <option value="expense" data-i18n="expense">Expense</option>
+              </select>
+            </label>
+
+            <label class="form__field form__field--full">
+              <span data-i18n="searchByTitle">Search by title</span>
+              <input id="searchInput" type="text" placeholder="Start typing..." aria-label="Search transactions by title" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="card transactions" aria-label="Transaction list">
+        <div class="transactions__header">
+          <h3 class="section-title" data-i18n="transactions">Transactions</h3>
+          <p class="transactions__meta" id="resultsCount" aria-live="polite">0 results</p>
+        </div>
+
+        <div class="transactions__list" id="transactionsList">
+          <div class="transactions__empty">
+            <div class="empty__icon" aria-hidden="true">+</div>
+            <p data-i18n="noTransactions">No transactions yet. Add your first one to get started.</p>
+            <button class="btn btn--accent empty-add-btn" type="button" data-i18n="addFirst">
+              Add First Transaction
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div
+      class="modal"
+      id="confirmModal"
+      aria-hidden="true"
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="confirmTitle"
+    >
+      <div class="modal__backdrop" data-close="true"></div>
+      <div class="modal__content">
+        <h3 class="section-title" id="confirmTitle" data-i18n="deleteTitle">Delete transaction?</h3>
+        <p class="modal__text" data-i18n="deleteBody">This action cannot be undone.</p>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" id="cancelDeleteBtn" type="button" data-i18n="cancel">
+            Cancel
+          </button>
+          <button class="btn btn--danger" id="confirmDeleteBtn" type="button" data-i18n="delete">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cookie consent banner -->
+    <div class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Cookie consent" aria-modal="true">
+      <p class="cookie-banner__text" data-i18n="cookieMsg">
+        We use cookies to store your preferences and transaction data locally.
+        No data is shared with third parties.
+      </p>
+      <div class="cookie-banner__actions">
+        <a href="privacy.html" class="cookie-banner__link" data-i18n="privacyPolicy">Privacy Policy</a>
+        <button class="btn btn--ghost" id="declineCookiesBtn" type="button" data-i18n="declineCookies">Decline</button>
+        <button class="btn btn--accent" id="acceptCookiesBtn" type="button" data-i18n="acceptCookies">Accept</button>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer" role="alert" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
