@@ -259,6 +259,7 @@ const setLang = (lang) => {
   localStorage.setItem(LANG_KEY, lang);
   applyI18n();
   renderApp();
+  Logger.info("Language changed", { lang });
 };
 
 const loadLang = () => {
@@ -307,11 +308,13 @@ const dom = {
 
 const saveToLocalStorage = () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.transactions));
+  Logger.debug("Transactions saved to localStorage", { count: state.transactions.length });
 };
 
 const loadFromLocalStorage = () => {
   const stored = localStorage.getItem(STORAGE_KEY);
   state.transactions = stored ? JSON.parse(stored) : [];
+  Logger.debug("Transactions loaded from localStorage", { count: state.transactions.length });
 };
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
@@ -322,6 +325,7 @@ const setTheme = (theme) => {
   dom.themeToggleBtn.textContent =
     theme === "light" ? t("darkMode") : t("lightMode");
   localStorage.setItem(THEME_KEY, theme);
+  Logger.info("Theme changed", { theme });
 };
 
 const loadTheme = () => {
@@ -387,6 +391,7 @@ const resetFormState = () => {
 const addTransaction = () => {
   if (!validateForm()) {
     showToast(t("fixFields"), "error");
+    Logger.warn("Transaction form submission blocked by validation errors");
     return;
   }
   const title = dom.titleInput.value.trim();
@@ -399,12 +404,12 @@ const addTransaction = () => {
       tx.id === state.editingId ? { ...tx, title, amount, category, date } : tx
     );
     showToast(t("transactionUpdated"));
+    Logger.info("Transaction updated", { id: state.editingId, title, amount, category, date });
   } else {
-    state.transactions = [
-      { id: generateID(), title, amount, category, date },
-      ...state.transactions,
-    ];
+    const newTx = { id: generateID(), title, amount, category, date };
+    state.transactions = [newTx, ...state.transactions];
     showToast(t("transactionAdded"));
+    Logger.info("Transaction added", { id: newTx.id, title, amount, category, date });
   }
   resetFormState();
   saveToLocalStorage();
@@ -430,6 +435,7 @@ const deleteTransaction = (id) => {
   saveToLocalStorage();
   renderApp();
   showToast(t("transactionDeleted"));
+  Logger.info("Transaction deleted", { id });
 };
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
@@ -561,6 +567,7 @@ const renderApp = () => {
 const exportToCSV = () => {
   if (state.transactions.length === 0) {
     showToast(t("noDataExport"), "error");
+    Logger.warn("CSV export attempted with no transactions");
     return;
   }
   const headers = ["Title", "Amount", "Category", "Date"];
@@ -578,6 +585,7 @@ const exportToCSV = () => {
   link.remove();
   URL.revokeObjectURL(url);
   showToast(t("csvExported"));
+  Logger.info("CSV exported", { transactionCount: state.transactions.length });
 };
 
 // ── Cookie banner ─────────────────────────────────────────────────────────────
@@ -595,12 +603,14 @@ const hideCookieBanner = () => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 const initializeApp = () => {
+  Logger.info("App initializing");
   loadFromLocalStorage();
   loadLang();
   loadTheme();
   applyI18n();
   renderApp();
   initCookieBanner();
+  Logger.info("App initialized", { lang: state.lang, theme: state.theme, transactions: state.transactions.length });
 
   setTimeout(() => dom.skeleton.classList.add("is-hidden"), 300);
 
