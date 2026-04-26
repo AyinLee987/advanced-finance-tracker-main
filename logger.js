@@ -3,6 +3,8 @@
 // ── Logger ────────────────────────────────────────────────────────────────────
 // Levels: DEBUG < INFO < WARN < ERROR
 // Logs are written to the console and persisted in localStorage (capped at 200).
+// When deployed on Vercel, logs are also sent to the /api/log endpoint so they
+// appear in the Vercel Dashboard → Deployment → Logs.
 
 const Logger = (() => {
   const STORAGE_KEY = "financeTrackerLogs";
@@ -56,6 +58,37 @@ const Logger = (() => {
     saveLogs(logs);
   }
 
+  /**
+   * Sends a log entry to the Vercel Serverless Function /api/log
+   * so it appears in the Vercel Dashboard → Deployment → Logs.
+   * Uses sendBeacon for reliability (works even when page is unloading).
+   * Falls back to fetch if sendBeacon is not available.
+   */
+  function sendToVercel(level, message, data) {
+    const payload = JSON.stringify({
+      level,
+      message,
+      data,
+      timestamp: timestamp(),
+    });
+
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon("/api/log", payload);
+      } else {
+        fetch("/api/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+        }).catch(() => {
+          // Silently ignore network errors (e.g., when running locally without Vercel)
+        });
+      }
+    } catch {
+      // Silently ignore errors (e.g., when running locally without Vercel)
+    }
+  }
+
   function log(level, message, data) {
     if (LEVELS[level] < minLevel) return;
     const ts = timestamp();
@@ -68,6 +101,8 @@ const Logger = (() => {
       console[method](prefix, STYLES[level], label);
     }
     persist(level, message, data);
+    // Send to Vercel Dashboard logs (silently fails if not on Vercel)
+    sendToVercel(level, message, data);
   }
 
   return {
