@@ -108,3 +108,6 @@ const Logger = (() => {
     },
   };
 })();
+
+// Expose Logger globally so main.js can access it
+window.Logger = Logger;
