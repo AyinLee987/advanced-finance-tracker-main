@@ -73,17 +73,14 @@ const Logger = (() => {
     });
 
     try {
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon("/api/log", payload);
-      } else {
-        fetch("/api/log", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: payload,
-        }).catch(() => {
-          // Silently ignore network errors (e.g., when running locally without Vercel)
-        });
-      }
+      // Use fetch with proper Content-Type header so the server can parse the body
+      fetch("/api/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).catch(() => {
+        // Silently ignore network errors (e.g., when running locally without Vercel)
+      });
     } catch {
       // Silently ignore errors (e.g., when running locally without Vercel)
     }
