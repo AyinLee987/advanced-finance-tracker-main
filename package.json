@@ -8,7 +8,6 @@
   },
   "devDependencies": {
     "@vitest/coverage-istanbul": "^2.0.0",
-    "jest": "^30.4.2",
     "vitest": "^2.0.0"
   }
 }
